@@ -1,0 +1,13 @@
+# Entities
+entity.Lucky Beast.name=Lucky Beast
+
+# Items
+item.japariCoin.name=Japari Coin
+
+# Records
+item.recordYoukoso.name=Music Disc
+item.recordYoukoso.desc=Youkoso Japari Park e
+item.recordYoukoso.desc2=Dobutsu BiscuitsxPPP
+
+# Tab
+itemGroup.kemonocraft=KemonoCraft

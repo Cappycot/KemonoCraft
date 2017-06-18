@@ -25,11 +25,26 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 	}
 
 	public enum FacingDirection {
-		NORTH(3), EAST(0), SOUTH(1), WEST(2);
+		NORTH(1, 3), EAST(0, 0), SOUTH(3, 2), WEST(2, 1);
 		public final int dir;
+		public final int mcdir;
 
-		private FacingDirection(int dir) {
-			this.dir = dir;
+		private FacingDirection(int usefuldir, int uselessdir) {
+			this.dir = usefuldir;
+			this.mcdir = uselessdir;
+		}
+
+		public static FacingDirection getDir(int usefuldir) {
+			switch (usefuldir) {
+			case 0:
+				return EAST;
+			case 1:
+				return NORTH;
+			case 2:
+				return WEST;
+			default:
+				return SOUTH;
+			}
 		}
 	}
 
@@ -267,24 +282,9 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 			}
 		}
 
-		// Entries. Door rotation is literally hard-coded rip.
-		int frontDoor = 0;
-		int backDoor;
-		switch (dir) {
-		case NORTH:
-			frontDoor = 1;
-			break;
-		case EAST:
-			frontDoor = 2;
-			break;
-		case SOUTH:
-			frontDoor = 3;
-			break;
-		default: // WEST
-			break;
-		}
-		frontDoor = calcStairFace(FacingDirection.NORTH, dir);
-		backDoor = (frontDoor + 2) % 4;
+		// Entrances.
+		int frontDoor = calcRotation(FacingDirection.SOUTH, dir);
+		int backDoor = (frontDoor + 2) % 4;
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < 2; j++) {
 				for (int k = 0; k < 2; k++) {
@@ -301,24 +301,110 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 		ItemDoor.placeDoorBlock(world, support.x, support.y, support.z, backDoor, Blocks.wooden_door);
 		support = getBlockPosAt(x, y1 + 1, z, 6, 16, dir);
 		ItemDoor.placeDoorBlock(world, support.x, support.y, support.z, backDoor, Blocks.wooden_door);
+		// Entrance front decor.
+		switch (dir) {
+		case EAST:
+		case WEST:
+			frontDoor = 4;
+			break;
+		default:
+			frontDoor = 8;
+			break;
+		}
+		for (int i = 3; i < 5; i++) {
+			setBlockAt(world, x, y1 + 3, z, i, 0, dir, Blocks.stained_glass, 12, true);
+			setBlockAt(world, x, y1 + 4, z, i, 0, dir, Blocks.log, frontDoor, true);
+		}
+		for (int j = 2; j < 4; j++) {
+			setBlockAt(world, x, y1 + j, z, 1, 0, dir, Blocks.stained_glass_pane, 12, true);
+			setBlockAt(world, x, y1 + j, z, 2, 0, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + j, z, 7, 0, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + j, z, 8, 0, dir, Blocks.stained_glass_pane, 12, true);
+			setBlockAt(world, x, y1 + j, z, 9, 0, dir, Blocks.planks, 1, true);
+		}
+		// Entrance back decor.
+		for (int i = 5; i < 7; i++) {
+			setBlockAt(world, x, y1 + 3, z, i, 16, dir, Blocks.stained_glass, 12, true);
+			setBlockAt(world, x, y1 + 4, z, i, 16, dir, Blocks.log, frontDoor, true);
+		}
+		for (int j = 2; j < 4; j++) {
+			setBlockAt(world, x, y1 + j, z, 1, 16, dir, Blocks.planks, 1, true);
+			for (int i = 2; i < 4; i++)
+				setBlockAt(world, x, y1 + j, z, i, 16, dir, Blocks.stained_glass_pane, 12, true);
+			setBlockAt(world, x, y1 + j, z, 7, 16, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + j, z, 8, 16, dir, Blocks.stained_glass_pane, 12, true);
+			setBlockAt(world, x, y1 + j, z, 9, 16, dir, Blocks.planks, 1, true);
+		}
+		setBlockAt(world, x, y1 + 1, z, 7, 16, dir, Blocks.planks, 1, true);
+		// Front awning.
+		frontDoor = calcStairFace(FacingDirection.SOUTH, dir) + 4;
+		for (int i = 2; i < 9; i++) {
+			setBlockAt(world, x, y1 + 5, z, i, -2, dir, Blocks.stained_hardened_clay, 3, true);
+			setBlockAt(world, x, y1 + 5, z, i, -1, dir, Blocks.quartz_stairs, frontDoor, true);
+			setBlockAt(world, x, y1 + 6, z, i, -1, dir, Blocks.stained_hardened_clay, 3, true);
+		}
 
 		// Front and back walls.
+		for (int j = 1; j < 6; j++) {
+			setBlockAt(world, x, y1 + j, z, 5, 0, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + j, z, 4, 16, dir, Blocks.planks, 1, true);
+		}
+		patternThingy(world, x, y1, z, dir, false);
+		patternThingy(world, x, y1, z, dir, true);
+		
+		// Clear interior.
+		for (int i = 1; i < 10; i++) {
+			for (int j = 2; j < 9; j++) {
+				for (int k = 1; k < 16; k++) {
+					setBlockAt(world, x, y1 + j, z, i, k, dir, Blocks.air, 0, true);
+				}
+			}
+		}
 
 		// Test: Seed is -3831134395952103524
 		// Test: /tp 0 120 -420
+		// Test: or use Tunneler's Dream preset and die to lag.
 		System.out.println("Cafe generation at " + x + ", " + z);
 		return true;
 	}
 
+	public int calcRotation(FacingDirection faceDir, FacingDirection dir) {
+		return (faceDir.dir + 1 + dir.dir) % 4;
+	}
+
 	/**
-	 * I hate math now.
+	 * Why does 0 = east then 1 = west in Minecraft blocks? Someone please
+	 * explain this shitty mathematical convention.
 	 * 
 	 * @param stairDir
 	 * @param dir
 	 * @return
 	 */
 	public int calcStairFace(FacingDirection stairDir, FacingDirection dir) {
-		return (stairDir.dir - 1 + dir.dir) % 4;
+		return FacingDirection.getDir(calcRotation(stairDir, dir)).mcdir;
+	}
+
+	public void patternThingy(World world, int x, int y1, int z, FacingDirection dir, boolean back) {
+		int zInc = back ? 0 : 16;
+		for (int i = 1; i < 10; i++) {
+			setBlockAt(world, x, y1 + 6, z, i, zInc, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 7, z, i, zInc, dir, Blocks.log, 2, true);
+			setBlockAt(world, x, y1 + 8, z, i, zInc, dir, Blocks.planks, 1, true);
+		}
+		for (int i = 2; i < 10; i += 3) {
+			setBlockAt(world, x, y1 + 6, z, i, zInc, dir, Blocks.planks, 5, true);
+			setBlockAt(world, x, y1 + 7, z, i, zInc, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 8, z, i, zInc, dir, Blocks.planks, 5, true);
+		}
+		for (int i = 3; i < 8; i++) {
+			for (int j = 0; j < 3; j += 2) {
+				boolean mid = i == 5;
+				setBlockAt(world, x, y1 + 9 + j, z, i, zInc, dir, mid ? Blocks.planks : Blocks.log, mid ? 1 : 2, true);
+				setBlockAt(world, x, y1 + 10 + j, z, i, zInc, dir, Blocks.planks, mid ? 5 : 1, true);
+			}
+		}
+		setBlockAt(world, x, y1 + 13, z, 5, zInc, dir, Blocks.log, 2, true);
+		setBlockAt(world, x, y1 + 13, z, 5, back ? 17 : -1, dir, Blocks.nether_brick_fence, 0, true);
 	}
 
 	@Override

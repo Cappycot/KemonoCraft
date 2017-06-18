@@ -10,6 +10,8 @@ import io.github.cappycot.kemonocraft.block.SandstarOre;
 import io.github.cappycot.kemonocraft.entity.EntityBipedTest;
 import io.github.cappycot.kemonocraft.entity.EntityLuckyBeast;
 import io.github.cappycot.kemonocraft.item.KemonoRecord;
+import io.github.cappycot.kemonocraft.worldgen.JapariCafeGenerator;
+import io.github.cappycot.kemonocraft.worldgen.TestGenerator;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityList;
 import net.minecraft.init.Items;
@@ -55,7 +57,7 @@ public class CommonProxy {
 	}
 
 	public void init(FMLInitializationEvent event) {
-
+		GameRegistry.registerWorldGenerator(new JapariCafeGenerator(), 100);
 	}
 
 	public void postInit(FMLPostInitializationEvent event) {

@@ -1,14 +1,19 @@
 package io.github.cappycot.kemonocraft.worldgen;
 
+import static net.minecraftforge.common.ChestGenHooks.DUNGEON_CHEST;
+
 import java.util.Random;
 
 import cpw.mods.fml.common.IWorldGenerator;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemDoor;
+import net.minecraft.tileentity.TileEntityChest;
+import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import net.minecraftforge.common.ChestGenHooks;
 
 public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerator {
 
@@ -122,8 +127,8 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 
 	private boolean setBlock(World world, int x, int y, int z, Block block, int metadata, boolean override) {
 		Block current = world.getBlock(x, y, z);
-		if (override || current.isAir(world, x, y, z) || current.isLeaves(world, x, y, z)
-				|| current == Blocks.snow_layer || current == Blocks.log) {
+		if (override || current.isAir(world, x, y, z) || current.isLeaves(world, x, y, z) || current == Blocks.log
+				|| current == Blocks.snow_layer || current == Blocks.tallgrass) {
 			world.setBlock(x, y, z, block, metadata, 2);
 			return true;
 		}
@@ -267,10 +272,23 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 				setBlockAt(world, x, y1 + 1, z, i, k, dir, Blocks.stone_slab, 3, true);
 			}
 		}
+		// Clear interior.
+		for (int k = 1; k < 16; k++) {
+			for (int i = 1; i < 10; i++) {
+				for (int j = 2; j < 9; j++) {
+					setBlockAt(world, x, y1 + j, z, i, k, dir, Blocks.air, 0, true);
+				}
+			}
+			for (int i = 3; i < 8; i++) {
+				for (int j = 9; j < 13; j++) {
+					setBlockAt(world, x, y1 + j, z, i, k, dir, Blocks.air, 0, true);
+				}
+			}
+		}
 
 		// Sandstone walls.
-		for (int i = 0; i < 11; i++) {
-			for (int j = 1; j < 6; j++) {
+		for (int j = 1; j < 6; j++) {
+			for (int i = 0; i < 11; i++) {
 				if (i == 0 || i == 10) {
 					for (int k = 0; k < 17; k++) {
 						setBlockAt(world, x, y1 + j, z, i, k, dir, Blocks.sandstone, 0, true);
@@ -280,11 +298,14 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 					setBlockAt(world, x, y1 + j, z, i, 16, dir, Blocks.sandstone, 0, true);
 				}
 			}
+			// Extra pillar by storage thing?
+			setBlockAt(world, x, y1 + j, z, 9, 15, dir, Blocks.sandstone, 0, true);
 		}
 
 		// Entrances.
-		int frontDoor = calcRotation(FacingDirection.SOUTH, dir);
-		int backDoor = (frontDoor + 2) % 4;
+		int front = (6 - dir.dir) % 4; // Convert c-clockwise to clockwise
+										// rotation.
+		int back = (front + 2) % 4;
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < 2; j++) {
 				for (int k = 0; k < 2; k++) {
@@ -294,26 +315,27 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 			}
 		}
 		support = getBlockPosAt(x, y1 + 1, z, 3, 0, dir);
-		ItemDoor.placeDoorBlock(world, support.x, support.y, support.z, frontDoor, Blocks.wooden_door);
+		ItemDoor.placeDoorBlock(world, support.x, support.y, support.z, front, Blocks.wooden_door);
 		support = getBlockPosAt(x, y1 + 1, z, 4, 0, dir);
-		ItemDoor.placeDoorBlock(world, support.x, support.y, support.z, frontDoor, Blocks.wooden_door);
+		ItemDoor.placeDoorBlock(world, support.x, support.y, support.z, front, Blocks.wooden_door);
 		support = getBlockPosAt(x, y1 + 1, z, 5, 16, dir);
-		ItemDoor.placeDoorBlock(world, support.x, support.y, support.z, backDoor, Blocks.wooden_door);
+		ItemDoor.placeDoorBlock(world, support.x, support.y, support.z, back, Blocks.wooden_door);
 		support = getBlockPosAt(x, y1 + 1, z, 6, 16, dir);
-		ItemDoor.placeDoorBlock(world, support.x, support.y, support.z, backDoor, Blocks.wooden_door);
+		ItemDoor.placeDoorBlock(world, support.x, support.y, support.z, back, Blocks.wooden_door);
+
 		// Entrance front decor.
 		switch (dir) {
 		case EAST:
 		case WEST:
-			frontDoor = 4;
+			front = 4;
 			break;
 		default:
-			frontDoor = 8;
+			front = 8;
 			break;
 		}
 		for (int i = 3; i < 5; i++) {
 			setBlockAt(world, x, y1 + 3, z, i, 0, dir, Blocks.stained_glass, 12, true);
-			setBlockAt(world, x, y1 + 4, z, i, 0, dir, Blocks.log, frontDoor, true);
+			setBlockAt(world, x, y1 + 4, z, i, 0, dir, Blocks.log, front, true);
 		}
 		for (int j = 2; j < 4; j++) {
 			setBlockAt(world, x, y1 + j, z, 1, 0, dir, Blocks.stained_glass_pane, 12, true);
@@ -325,7 +347,7 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 		// Entrance back decor.
 		for (int i = 5; i < 7; i++) {
 			setBlockAt(world, x, y1 + 3, z, i, 16, dir, Blocks.stained_glass, 12, true);
-			setBlockAt(world, x, y1 + 4, z, i, 16, dir, Blocks.log, frontDoor, true);
+			setBlockAt(world, x, y1 + 4, z, i, 16, dir, Blocks.log, front, true);
 		}
 		for (int j = 2; j < 4; j++) {
 			setBlockAt(world, x, y1 + j, z, 1, 16, dir, Blocks.planks, 1, true);
@@ -337,10 +359,10 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 		}
 		setBlockAt(world, x, y1 + 1, z, 7, 16, dir, Blocks.planks, 1, true);
 		// Front awning.
-		frontDoor = calcStairFace(FacingDirection.SOUTH, dir) + 4;
+		front = calcStairFace(FacingDirection.SOUTH, dir) + 4;
 		for (int i = 2; i < 9; i++) {
 			setBlockAt(world, x, y1 + 5, z, i, -2, dir, Blocks.stained_hardened_clay, 3, true);
-			setBlockAt(world, x, y1 + 5, z, i, -1, dir, Blocks.quartz_stairs, frontDoor, true);
+			setBlockAt(world, x, y1 + 5, z, i, -1, dir, Blocks.quartz_stairs, front, true);
 			setBlockAt(world, x, y1 + 6, z, i, -1, dir, Blocks.stained_hardened_clay, 3, true);
 		}
 
@@ -351,15 +373,188 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 		}
 		patternThingy(world, x, y1, z, dir, false);
 		patternThingy(world, x, y1, z, dir, true);
-		
-		// Clear interior.
-		for (int i = 1; i < 10; i++) {
-			for (int j = 2; j < 9; j++) {
-				for (int k = 1; k < 16; k++) {
-					setBlockAt(world, x, y1 + j, z, i, k, dir, Blocks.air, 0, true);
+
+		// Create interior.
+		front = calcStairFace(FacingDirection.SOUTH, dir);
+		back = calcStairFace(FacingDirection.NORTH, dir);
+		int left = calcStairFace(FacingDirection.WEST, dir);
+		int right = calcStairFace(FacingDirection.EAST, dir);
+
+		// Bottom right corner.
+		setBlockAt(world, x, y1 + 1, z, 9, 1, dir, Blocks.planks, 1, true);
+		setBlockAt(world, x, y1 + 2, z, 9, 1, dir, Blocks.spruce_stairs, right + 4, true);
+		check = getBlockPosAt(x, y1 + 3, z, 9, 1, dir);
+		setBlock(world, check.x, check.y, check.z, Blocks.chest, 0, true);
+		// Rotate the damn chest with this method because setBlock can't
+		// overrule stuff.
+		world.setBlockMetadataWithNotify(check.x, check.y, check.z, 5 - left, 2);
+		TileEntityChest tileentitychest = (TileEntityChest) world.getTileEntity(check.x, check.y, check.z);
+		if (tileentitychest != null)
+			WeightedRandomChestContent.generateChestContents(random, ChestGenHooks.getItems(DUNGEON_CHEST, random),
+					tileentitychest, ChestGenHooks.getCount(DUNGEON_CHEST, random));
+		setBlockAt(world, x, y1 + 1, z, 8, 3, dir, Blocks.planks, 1, true);
+		setBlockAt(world, x, y1 + 2, z, 8, 3, dir, Blocks.jukebox, 0, true);
+		setBlockAt(world, x, y1 + 3, z, 8, 3, dir, Blocks.planks, 1, true);
+
+		// Large connected tables.
+		for (int k = 3; k < 8; k++) {
+			if (k == 5) {
+				setBlockAt(world, x, y1 + 1, z, 4, 5, dir, Blocks.stone_slab, 3, true);
+				setBlockAt(world, x, y1 + 2, z, 4, 5, dir, Blocks.wooden_slab, 9, true);
+				setBlockAt(world, x, y1 + 1, z, 3, 5, dir, Blocks.spruce_stairs, left, true);
+				setBlockAt(world, x, y1 + 2, z, 3, 5, dir, Blocks.spruce_stairs, left + 4, true);
+				setBlockAt(world, x, y1 + 1, z, 5, 5, dir, Blocks.spruce_stairs, right, true);
+				setBlockAt(world, x, y1 + 2, z, 5, 5, dir, Blocks.spruce_stairs, right + 4, true);
+			} else {
+				if (k % 3 == 0) {
+					setBlockAt(world, x, y1 + 1, z, 4, k, dir, Blocks.spruce_stairs, front, true);
+					setBlockAt(world, x, y1 + 1, z, 4, k + 1, dir, Blocks.spruce_stairs, back, true);
+					// +4 to metadata means upside-down.
+					setBlockAt(world, x, y1 + 2, z, 4, k, dir, Blocks.spruce_stairs, front + 4, true);
+					setBlockAt(world, x, y1 + 2, z, 4, k + 1, dir, Blocks.spruce_stairs, back + 4, true);
+				}
+				setBlockAt(world, x, y1 + 1, z, 3, k, dir, Blocks.planks, 1, true);
+				setBlockAt(world, x, y1 + 1, z, 5, k, dir, Blocks.planks, 1, true);
+			}
+		}
+
+		// Table next to bar.
+		setBlockAt(world, x, y1 + 1, z, 1, 10, dir, Blocks.planks, 1, true);
+		setBlockAt(world, x, y1 + 1, z, 1, 12, dir, Blocks.spruce_stairs, front, true);
+		setBlockAt(world, x, y1 + 1, z, 1, 11, dir, Blocks.spruce_stairs, back, true);
+		// +4 to metadata means upside-down.
+		setBlockAt(world, x, y1 + 2, z, 1, 12, dir, Blocks.spruce_stairs, front + 4, true);
+		setBlockAt(world, x, y1 + 2, z, 1, 11, dir, Blocks.spruce_stairs, back + 4, true);
+		setBlockAt(world, x, y1 + 1, z, 1, 13, dir, Blocks.planks, 1, true);
+
+		// Bar area.
+		setBlockAt(world, x, y1 + 1, z, 4, 12, dir, Blocks.spruce_stairs, back, true);
+		for (int k = 10; k < 14; k++) {
+			setBlockAt(world, x, y1 + 1, z, 5, k, dir, Blocks.spruce_stairs, right, true);
+			setBlockAt(world, x, y1 + 1, z, 7, k, dir, Blocks.stone_stairs, left, true);
+		}
+		for (int j = 1; j < 3; j++) {
+			for (int i = 4; i < 7; i++)
+				setBlockAt(world, x, y1 + j, z, i, 13, dir, Blocks.planks, 1, true);
+			for (int k = 10; k < 13; k++)
+				setBlockAt(world, x, y1 + j, z, 6, k, dir, Blocks.planks, 1, true);
+		}
+
+		// Shelves and stuff behind bar.
+		for (int j = 1; j < 5; j++) {
+			setBlockAt(world, x, y1 + j, z, 9, 10, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + j, z, 9, 14, dir, Blocks.planks, 1, true);
+			for (int k = 11; k < 14; k++) {
+				switch (j) {
+				case 1:
+					setBlockAt(world, x, y1 + j, z, 9, k, dir, Blocks.planks, 1, true);
+					break;
+				case 2:
+					setBlockAt(world, x, y1 + j, z, 9, k, dir, Blocks.cauldron, random.nextInt(4), true);
+					break;
+				default:
+					setBlockAt(world, x, y1 + j, z, 9, k, dir, Blocks.spruce_stairs, right + 4, true);
+					break;
 				}
 			}
 		}
+
+		// Bottom of stairs.
+		setBlockAt(world, x, y1 + 1, z, 8, 7, dir, Blocks.planks, 1, true);
+		setBlockAt(world, x, y1 + 1, z, 9, 7, dir, Blocks.planks, 1, true);
+		setBlockAt(world, x, y1 + 1, z, 8, 8, dir, Blocks.stone_stairs, front, true);
+		setBlockAt(world, x, y1 + 1, z, 9, 8, dir, Blocks.stone_stairs, front, true);
+		// Unintentional "C++" pun thing.
+		for (int c = 0; c < 3; c++) {
+			// I think I'm getting addicted to using for loops for even two
+			// iterations and I think it's sickening.
+			for (int i = 8; i < 10; i++) {
+				setBlockAt(world, x, y1 + 2 + c, z, i, 7 - c, dir, Blocks.spruce_stairs, front, true);
+				setBlockAt(world, x, y1 + 2 + c, z, i, 6 - c, dir, Blocks.spruce_stairs, back + 4, true);
+			}
+		}
+
+		// Turn at stairs.
+		for (int k = 1; k < 5; k++) {
+			setBlockAt(world, x, y1 + 4, z, 8, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 4, z, 9, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 5, z, 9, k, dir, Blocks.planks, 1, true);
+		}
+		setBlockAt(world, x, y1 + 4, z, 9, 1, dir, Blocks.wooden_slab, 1, true);
+		setBlockAt(world, x, y1 + 5, z, 9, 5, dir, Blocks.spruce_stairs, front + 4, true);
+		setBlockAt(world, x, y1 + 4, z, 7, 1, dir, Blocks.spruce_stairs, right + 4, true);
+		setBlockAt(world, x, y1 + 4, z, 7, 2, dir, Blocks.spruce_stairs, right + 4, true);
+		setBlockAt(world, x, y1 + 5, z, 6, 1, dir, Blocks.spruce_stairs, right + 4, true);
+		setBlockAt(world, x, y1 + 5, z, 6, 2, dir, Blocks.spruce_stairs, right + 4, true);
+
+		// The start of the second floor.
+		for (int i = 1; i < 10; i++)
+			for (int k = 1; k < 16; k++)
+				setBlockAt(world, x, y1 + 6, z, i, k, dir, Blocks.planks, 1, true);
+
+		// Lights
+		for (int i = 3; i < 10; i += 4) {
+			for (int k = 2; k < 16; k += 3) {
+				setBlockAt(world, x, y1 + 5, z, i, k, dir, Blocks.redstone_lamp, 0, true);
+				setBlockAt(world, x, y1 + 6, z, i, k, dir, Blocks.redstone_lamp, 0, true);
+			}
+		}
+		setBlockAt(world, x, y1 + 6, z, 7, 5, dir, Blocks.planks, 1, true); // Erase
+																			// light.
+
+		// The rest of the main stairs.
+		setBlockAt(world, x, y1 + 5, z, 7, 1, dir, Blocks.spruce_stairs, left, true);
+		setBlockAt(world, x, y1 + 5, z, 7, 2, dir, Blocks.spruce_stairs, left, true);
+		setBlockAt(world, x, y1 + 5, z, 7, 3, dir, Blocks.planks, 1, true);
+		setBlockAt(world, x, y1 + 5, z, 7, 4, dir, Blocks.planks, 1, true);
+		setBlockAt(world, x, y1 + 6, z, 6, 1, dir, Blocks.spruce_stairs, left, true);
+		setBlockAt(world, x, y1 + 6, z, 6, 2, dir, Blocks.spruce_stairs, left, true);
+		setBlockAt(world, x, y1 + 6, z, 7, 1, dir, Blocks.air, 0, true);
+		setBlockAt(world, x, y1 + 6, z, 7, 2, dir, Blocks.air, 0, true);
+		for (int k = 1; k < 7; k++)
+			setBlockAt(world, x, y1 + 6, z, 8, k, dir, Blocks.air, 0, true);
+
+		// Walls of 2nd floor.
+		for (int k = 1; k < 16; k++) {
+			setBlockAt(world, x, y1 + 7, z, 1, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 7, z, 2, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 8, z, 2, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 9, z, 3, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 10, z, 3, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 11, z, 4, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 12, z, 4, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 13, z, 5, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 12, z, 6, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 11, z, 6, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 10, z, 7, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 9, z, 7, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 8, z, 8, k, dir, Blocks.planks, 1, true);
+			if (k > 4)
+				setBlockAt(world, x, y1 + 7, z, 8, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 8, z, 8, k, dir, Blocks.planks, 1, true);
+			setBlockAt(world, x, y1 + 7, z, 9, k, dir, Blocks.planks, 1, true);
+		}
+		// Plus some pillar.
+		for (int i = 6; i < 8; i++) {
+			for (int k = 3; k < 5; k++) {
+				setBlockAt(world, x, y1 + 7, z, i, k, dir, Blocks.planks, 1, true);
+				setBlockAt(world, x, y1 + 8, z, i, k, dir, Blocks.planks, 1, true);
+			}
+		}
+		
+		// Stairs to 3rd floor thing.
+		setBlockAt(world, x, y1 + 7, z, 5, 3, dir, Blocks.spruce_stairs, back, true);
+		setBlockAt(world, x, y1 + 7, z, 5, 4, dir, Blocks.planks, 1, true);
+		setBlockAt(world, x, y1 + 8, z, 5, 4, dir, Blocks.spruce_stairs, back, true);
+		setBlockAt(world, x, y1 + 7, z, 5, 5, dir, Blocks.planks, 1, true);
+		setBlockAt(world, x, y1 + 8, z, 5, 5, dir, Blocks.planks, 1, true);
+		
+		// 3rd floor section.
+		
+		
+		
+		// Roofing.
+		
 
 		// Test: Seed is -3831134395952103524
 		// Test: /tp 0 120 -420
@@ -368,20 +563,17 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 		return true;
 	}
 
-	public int calcRotation(FacingDirection faceDir, FacingDirection dir) {
-		return (faceDir.dir + 1 + dir.dir) % 4;
-	}
-
 	/**
-	 * Why does 0 = east then 1 = west in Minecraft blocks? Someone please
-	 * explain this shitty mathematical convention.
+	 * Calculate rotation for stairs and redstone torches. Why does 0 = east
+	 * then 1 = west in Minecraft blocks? Someone please explain this shitty
+	 * mathematical convention.
 	 * 
 	 * @param stairDir
 	 * @param dir
 	 * @return
 	 */
-	public int calcStairFace(FacingDirection stairDir, FacingDirection dir) {
-		return FacingDirection.getDir(calcRotation(stairDir, dir)).mcdir;
+	public int calcStairFace(FacingDirection faceDir, FacingDirection dir) {
+		return FacingDirection.getDir((faceDir.dir + 1 + dir.dir) % 4).mcdir;
 	}
 
 	public void patternThingy(World world, int x, int y1, int z, FacingDirection dir, boolean back) {

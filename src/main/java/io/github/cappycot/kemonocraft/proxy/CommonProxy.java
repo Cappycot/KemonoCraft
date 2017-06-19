@@ -11,7 +11,6 @@ import io.github.cappycot.kemonocraft.entity.EntityBipedTest;
 import io.github.cappycot.kemonocraft.entity.EntityLuckyBeast;
 import io.github.cappycot.kemonocraft.item.KemonoRecord;
 import io.github.cappycot.kemonocraft.worldgen.JapariCafeGenerator;
-import io.github.cappycot.kemonocraft.worldgen.TestGenerator;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityList;
 import net.minecraft.init.Items;
@@ -22,7 +21,10 @@ public class CommonProxy {
 
 	public static CreativeTabs kemonoTab;
 	public static Item japariCoin;
+	public static KemonoRecord recordOozora;
+	public static KemonoRecord recordParade;
 	public static KemonoRecord recordYoukoso;
+	public static KemonoRecord recordYoukosoMetal;
 	public static SandstarOre sandstarOre;
 
 	public void preInit(FMLPreInitializationEvent event) {
@@ -38,10 +40,19 @@ public class CommonProxy {
 		};
 		japariCoin = new Item().setUnlocalizedName("japariCoin").setCreativeTab(kemonoTab)
 				.setTextureName(KemonoCraft.MOD_ID + ":japariCoin");
+		recordOozora = (KemonoRecord) new KemonoRecord("Oozora").setUnlocalizedName("recordOozora")
+				.setCreativeTab(kemonoTab);
+		recordParade = (KemonoRecord) new KemonoRecord("Parade").setUnlocalizedName("recordParade")
+				.setCreativeTab(kemonoTab);
 		recordYoukoso = (KemonoRecord) new KemonoRecord("Youkoso").setUnlocalizedName("recordYoukoso")
 				.setCreativeTab(kemonoTab);
+		recordYoukosoMetal = (KemonoRecord) new KemonoRecord("YoukosoMetal").setUnlocalizedName("recordYoukosoMetal")
+				.setCreativeTab(kemonoTab);
 		GameRegistry.registerItem(japariCoin, "japariCoin");
+		GameRegistry.registerItem(recordOozora, "recordOozora");
+		GameRegistry.registerItem(recordParade, "recordParade");
 		GameRegistry.registerItem(recordYoukoso, "recordYoukoso");
+		GameRegistry.registerItem(recordYoukosoMetal, "recordYoukosoMetal");
 		// TODO: Move recipe registers to different class
 		GameRegistry.addRecipe(new ItemStack(japariCoin, 8),
 				new Object[] { "GGG", "GEG", "GGG", 'E', Items.emerald, 'G', Items.gold_ingot });

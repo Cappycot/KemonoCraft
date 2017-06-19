@@ -1,3 +1,6 @@
 {
-    "records.Youkoso": {"category": "record", "sounds": [{"name": "records/Youkoso", "stream": true}]}
+    "records.Oozora": {"category": "record", "sounds": [{"name": "records/Oozora", "stream": true}]},
+    "records.Parade": {"category": "record", "sounds": [{"name": "records/Parade", "stream": true}]},
+    "records.Youkoso": {"category": "record", "sounds": [{"name": "records/Youkoso", "stream": true}]},
+    "records.YoukosoMetal": {"category": "record", "sounds": [{"name": "records/YoukosoMetal", "stream": true}]}
 }

@@ -5,9 +5,18 @@ entity.Lucky Beast.name=Lucky Beast
 item.japariCoin.name=Japari Coin
 
 # Records
+item.recordOozora.name=Music Disc
+item.recordOozora.desc=Oozora Dreamer
+item.recordOozora.desc2=PPP
+item.recordParade.name=Music Disc
+item.recordParade.desc=Kemono Parade
+# item.recordParade.desc2=Dobutsu Biscuits
 item.recordYoukoso.name=Music Disc
 item.recordYoukoso.desc=Youkoso Japari Park e
 item.recordYoukoso.desc2=Dobutsu BiscuitsxPPP
+item.recordYoukosoMetal.name=Music Disc
+item.recordYoukosoMetal.desc=???
+item.recordYoukosoMetal.desc2=kintamahibachi
 
 # Tab
 itemGroup.kemonocraft=KemonoCraft

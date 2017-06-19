@@ -70,6 +70,7 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 	public static final int MAX_LIFT_DIFF = 2;
 	// Yee don't edit these unless you want the place looking differently...
 	public static final int[] ROOF_POSITIONS = { -1, 0, 0, 1, 2, 2, 3, 3, 4, 5 };
+	public static final int[][] TABLES = { { 1, 19 }, { 4, 20 } /* Blaze it! */, { 8, 19 } };
 	public static final int[] WOOD_DECK_LENGTHS = { 4, 5, 6, 6, 7, 7, 8, 8, 8, 8, 8, 7, 7, 6, 6, 5, 4 };
 	public static final boolean[] WOOD_DECK_FENCE = { true, true, true, false, true, false, true, false, false, false,
 			true, false, true, false, true, true, true };
@@ -432,6 +433,23 @@ public class JapariCafeGenerator extends WorldGenerator implements IWorldGenerat
 		setBlockAt(world, x, y1 + 2, z, 1, 12, dir, Blocks.spruce_stairs, front + 4, true);
 		setBlockAt(world, x, y1 + 2, z, 1, 11, dir, Blocks.spruce_stairs, back + 4, true);
 		setBlockAt(world, x, y1 + 1, z, 1, 13, dir, Blocks.planks, 1, true);
+
+		// Outside tables.
+		for (int[] table : TABLES) {
+			int i = table[0];
+			int k = table[1];
+			setBlockAt(world, x, y1 + 1, z, i, k, dir, Blocks.oak_stairs, right + 4, true);
+			setBlockAt(world, x, y1 + 1, z, i + 1, k, dir, Blocks.oak_stairs, back + 4, true);
+			setBlockAt(world, x, y1 + 1, z, i + 1, k + 1, dir, Blocks.oak_stairs, left + 4, true);
+			setBlockAt(world, x, y1 + 1, z, i, k + 1, dir, Blocks.oak_stairs, front + 4, true);
+		}
+		setBlockAt(world, x, y1 + 1, z, 0, 19, dir, Blocks.oak_stairs, left, true);
+		setBlockAt(world, x, y1 + 1, z, 3, 21, dir, Blocks.oak_stairs, left, true);
+		setBlockAt(world, x, y1 + 1, z, 4, 19, dir, Blocks.oak_stairs, front, true);
+		setBlockAt(world, x, y1 + 1, z, 5, 22, dir, Blocks.oak_stairs, back, true);
+		setBlockAt(world, x, y1 + 1, z, 6, 20, dir, Blocks.oak_stairs, right, true);
+		setBlockAt(world, x, y1 + 1, z, 8, 21, dir, Blocks.oak_stairs, back, true);
+		setBlockAt(world, x, y1 + 1, z, 10, 19, dir, Blocks.oak_stairs, right, true);
 
 		// Bar area.
 		setBlockAt(world, x, y1 + 1, z, 4, 12, dir, Blocks.spruce_stairs, back, true);
